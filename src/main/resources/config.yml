@@ -1,0 +1,31 @@
+﻿#The boards that will be shown to players
+boards:
+  #Title of the board, can be animated!
+  - title: <red>An example
+    #The amount of ticks to wait before each refresh
+    refreshPeriod: 5
+    #Contexts in which this board will be shown, first that matches all contexts will be shown
+    #Use "!" to show when the context doesn't match!
+    #Eamples:
+    #   - !world=world_nether
+    #   - !world=hub
+    #   - permission=tps.viewer
+    #   - gamemode=creative
+    #   - environment=the_end
+    #Supports:
+    #gamemode: CREATIVE;SURVIVAL;ADVENTURE;SPECTATOR (case insensitive)
+    #environment: NORMAL;NETHER;THE_END;CUSTOM (case insensitive)
+    contexts: []
+    #Lines shown to player
+    lines:
+      - A line
+      - <gradient:red:blue>A gradient line
+      - Your ping is <green><ping>
+      - <anim:4:A:animated:line:!!!!>
+      - <anim:4:specialAnimation>
+animated:
+  specialAnimation:
+    - <red>First line
+    - <blue>Second line
+    - <anim:4:specialAnimation>
+    - <green>Fourth line
