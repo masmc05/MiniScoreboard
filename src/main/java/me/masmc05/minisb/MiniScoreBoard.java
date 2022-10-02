@@ -63,7 +63,15 @@ public final class MiniScoreBoard extends JavaPlugin implements Listener {
                 } finally {
                     poolLock.unlock();
                 }
-            });
+            }) {
+        @Override
+        protected void afterExecute(Runnable r, Throwable t) {
+            super.afterExecute(r, t);
+            if (t != null) {
+                MiniScoreBoard.this.getComponentLogger().error(Component.text("Error while updating scoreboards! ", NamedTextColor.LIGHT_PURPLE), t);
+            }
+        }
+    };
     private BukkitTask task = null;
 
     @Override

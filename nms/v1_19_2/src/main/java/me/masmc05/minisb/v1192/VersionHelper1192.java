@@ -20,6 +20,7 @@ import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -81,7 +82,11 @@ public enum VersionHelper1192 implements VersionHelp {
         }
 
         private void send(Packet<?> packet) {
-            ((CraftPlayer) player()).getHandle().connection.send(packet);
+            Optional.of(player())
+                    .map(CraftPlayer.class::cast)
+                    .map(CraftPlayer::getHandle)
+                    .map(p -> p.connection)
+                    .ifPresent(c -> c.send(packet));
         }
     }
 
