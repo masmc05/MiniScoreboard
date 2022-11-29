@@ -98,7 +98,9 @@ public final class MiniScoreBoard extends JavaPlugin implements Listener {
             manager.registerAsynchronousCompletions();
             var parser = new AnnotationParser<>(manager, CommandSender.class, o -> manager.createDefaultCommandMeta());
             parser.registerBuilderModifier(CommandPermission.class, (a,b) -> {
-                Bukkit.getPluginManager().addPermission(new Permission(a.value()));
+                if (Bukkit.getPluginManager().getPermission(a.value()) == null) {
+                    Bukkit.getPluginManager().addPermission(new Permission(a.value()));
+                }
                 return b;
             });
             parser.parse(this);

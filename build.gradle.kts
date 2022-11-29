@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "me.masmc05.minisb"
-version = "1.1"
+version = "1.2"
 
 repositories {
     mavenCentral()
