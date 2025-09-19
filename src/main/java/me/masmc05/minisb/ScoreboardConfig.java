@@ -10,7 +10,7 @@ import net.kyori.adventure.text.minimessage.internal.parser.node.TagNode;
 import net.kyori.adventure.text.minimessage.internal.parser.node.TagPart;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -149,15 +149,15 @@ public record ScoreboardConfig(List<Predicate<Player>> contexts, List<Scoreboard
                     .tag(Set.of("anim", "animated"), (q, ctx) -> Tag.selfClosingInserting(Component.empty()))
                     .build()
             );
-            if (root.children().size() == 1 && root.children().get(0) instanceof TagNode node) {
+            if (root.children().size() == 1 && root.children().getFirst() instanceof TagNode node) {
                 var args = node.parts().stream().skip(1).map(TagPart::value).toList();
                 var refreshRate = 1;
                 try {
-                    refreshRate = Integer.parseInt(args.get(0));
+                    refreshRate = Integer.parseInt(args.getFirst());
                     args = args.subList(1, args.size());
                 } catch (NumberFormatException ignored) {}
                 if (args.size() == 1) {
-                    var line = ANIMATED_LINE.get(args.get(0));
+                    var line = ANIMATED_LINE.get(args.getFirst());
                     Objects.requireNonNull(line, "Couldn't find animated line named " + args.get(0));
                     if (line.oncePerTimes() != refreshRate) line = new AnimatedLine(line.lines(), refreshRate);
                     return line;

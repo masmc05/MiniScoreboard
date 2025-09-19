@@ -60,7 +60,7 @@ public record PlayerProcessor(Player player, PlayerBoard board, ScoreboardConfig
             case "world" -> Component.text(player.getWorld().getName());
             case "world_namespace" -> Component.text(player.getWorld().key().asString());
             case "health" -> Component.text(player.getHealth());
-            case "max_health" -> Component.text(Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue());
+            case "max_health" -> Component.text(Objects.requireNonNull(player.getAttribute(Attribute.MAX_HEALTH)).getValue());
             case "food" -> Component.text(player.getFoodLevel());
             case "time" -> Component.text(new SimpleDateFormat(Optional.ofNullable(arguments.peek()).map(Tag.Argument::value).orElse("HH:mm:ss.SSS")).format(new Date()));
             case "papi" -> {

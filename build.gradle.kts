@@ -1,28 +1,30 @@
 plugins {
     id("java")
-    id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("xyz.jpenilla.run-paper") version "1.0.6"
-    id("net.minecrell.plugin-yml.bukkit") version "0.5.2"
+    id("com.gradleup.shadow") version "9.1.0"
+    id("xyz.jpenilla.run-paper") version "3.0.0"
+    id("de.eldoria.plugin-yml.bukkit") version "0.8.0"
 }
 
 group = "me.masmc05.minisb"
 version = "1.2"
-
+java {
+    // Configure the java toolchain. This allows gradle to auto-provision JDK 17 on systems that only have JDK 8 installed for example.
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+}
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://oss.sonatype.org/content/groups/public/")
-    maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
+    maven("https://repo.extendedclip.com/releases/")
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.18.2-R0.1-SNAPSHOT")
-    compileOnly("me.clip:placeholderapi:2.11.2")
-    library("cloud.commandframework:cloud-paper:1.7.1")
-    library("cloud.commandframework:cloud-annotations:1.7.1")
+    compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
+    compileOnly("me.clip:placeholderapi:2.11.6")
+    library("org.incendo:cloud-paper:2.0.0-beta.10")
+    library("org.incendo:cloud-annotations:2.0.0")
     implementation(projects.nms.base)
-    implementation(project(path = ":nms:v1_18_2", configuration = "reobf"))
-    implementation(project(path = ":nms:v1_19_2", configuration = "reobf"))
+    implementation(projects.nms.v1218)
 }
 
 java {
@@ -31,16 +33,23 @@ java {
 
 tasks {
     runServer {
-        this.minecraftVersion.set("1.18.2")
+        this.minecraftVersion("1.21.8")
     }
     compileJava {
         this.options.encoding = "UTF-8"
+    }
+    shadowJar {
+        manifest {
+            attributes(
+                "paperweight-mappings-namespace" to "mojang"
+            )
+        }
     }
 }
 // Configure plugin.yml generation
 bukkit {
     main = "me.masmc05.minisb.MiniScoreBoard"
-    apiVersion = "1.18"
+    apiVersion = "1.21.8"
     authors = listOf("masmc05")
     version = rootProject.version.toString()
     prefix = "MiniSB"

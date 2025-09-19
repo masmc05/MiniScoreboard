@@ -8,9 +8,7 @@ pluginManagement {
 
 rootProject.name = "MiniScoreBoard"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
-include(":nms:v1_18_2")
-findProject(":nms:v1_18_2")?.name = "v1_18_2"
-include("nms:v1_19_2")
-findProject(":nms:v1_19_2")?.name = "v1_19_2"
+include(":nms:v1_21_8")
+findProject(":nms:v1_18_2")?.name = "v1_21_8"
 include("nms:Base")
 findProject(":nms:Base")?.name = "Base"

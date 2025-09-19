@@ -1,18 +1,12 @@
 package me.masmc05.minisb;
 
-import cloud.commandframework.annotations.AnnotationParser;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.CommandPermission;
-import cloud.commandframework.execution.AsynchronousCommandExecutionCoordinator;
-import cloud.commandframework.paper.PaperCommandManager;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import me.masmc05.minisb.v1182.VersionHelper1182;
-import me.masmc05.minisb.v1192.VersionHelper1192;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import me.masmc05.minisb.v1218.VersionHelper1218;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,6 +18,10 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.incendo.cloud.annotations.AnnotationParser;
+import org.incendo.cloud.annotations.Command;
+import org.incendo.cloud.execution.ExecutionCoordinator;
+import org.incendo.cloud.paper.PaperCommandManager;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -39,8 +37,7 @@ import java.util.stream.Stream;
 public final class MiniScoreBoard extends JavaPlugin implements Listener {
     public static boolean papiIntegration = false;
     public static final VersionHelp versionHelp = Stream.<VersionHelp>of(
-            VersionHelper1182.ISTANCE,
-            VersionHelper1192.ISTANCE
+            VersionHelper1218.ISTANCE
     ).filter(VersionHelp::checkCompatible).findFirst().orElseThrow(() -> new IllegalStateException("This version is unsupported"));
     private final ConcurrentHashMap<UUID, PlayerProcessor> processors = new ConcurrentHashMap<>();
     private final ReentrantLock poolLock = new ReentrantLock(true);
@@ -89,17 +86,15 @@ public final class MiniScoreBoard extends JavaPlugin implements Listener {
 
         Bukkit.getPluginManager().registerEvents(this, this);
         try {
-            var executor = AsynchronousCommandExecutionCoordinator.<CommandSender>newBuilder()
-                    .withAsynchronousParsing()
-                    .withExecutor(pool)
-                    .build();
-            var manager = PaperCommandManager.createNative(this, executor);
-            manager.registerBrigadier();
-            manager.registerAsynchronousCompletions();
-            var parser = new AnnotationParser<>(manager, CommandSender.class, o -> manager.createDefaultCommandMeta());
-            parser.registerBuilderModifier(CommandPermission.class, (a,b) -> {
-                if (Bukkit.getPluginManager().getPermission(a.value()) == null) {
-                    Bukkit.getPluginManager().addPermission(new Permission(a.value()));
+            var manager = PaperCommandManager.builder()
+                    .executionCoordinator(ExecutionCoordinator.coordinatorFor(pool))
+                    .buildOnEnable(this);
+            var parser = new AnnotationParser<>(manager, CommandSourceStack.class);
+            parser.registerBuilderModifier(org.incendo.cloud.annotations.Permission.class, (a, b) -> {
+                for (var perm : a.value()){
+                    if (Bukkit.getPluginManager().getPermission(perm) == null) {
+                        Bukkit.getPluginManager().addPermission(new Permission(perm));
+                    }
                 }
                 return b;
             });
@@ -110,7 +105,7 @@ public final class MiniScoreBoard extends JavaPlugin implements Listener {
     }
 
     private void planTask() {
-        if (Bukkit.getOnlinePlayers().size() == 0) return;
+        if (Bukkit.getOnlinePlayers().isEmpty()) return;
         pool.execute(this::process);
     }
 
@@ -162,21 +157,22 @@ public final class MiniScoreBoard extends JavaPlugin implements Listener {
         });
     }
 
-    @CommandMethod(value = "sb|scoreboard toggle", requiredSender = Player.class)
-    @CommandPermission("minisb.toggle")
-    public void onToggle(Player player) {
+    @Command(value = "sb|scoreboard toggle")
+    @org.incendo.cloud.annotations.Permission("minisb.toggle")
+    public void onToggle(CommandSourceStack sender) {
+        if (!(sender.getSender() instanceof Player player)) return;
         byte old = player.getPersistentDataContainer().getOrDefault(toggled, PersistentDataType.BYTE, (byte) 1);
         byte newVal = (byte) (old == 0 ? 1 : 0);
         player.getPersistentDataContainer().set(toggled, PersistentDataType.BYTE, newVal);
         if (newVal == 1) changeBoard(player);
         else processors.remove(player.getUniqueId()).board().clear();
     }
-    @CommandMethod("sb|scoreboard reload")
-    @CommandPermission("minisb.reload")
-    public void reload(CommandSender sender) {
+    @Command("sb|scoreboard reload")
+    @org.incendo.cloud.annotations.Permission("minisb.reload")
+    public void reload(CommandSourceStack sender) {
         ScoreboardConfig.loadConfig(this);
         Bukkit.getOnlinePlayers().forEach(this::changeBoard);
-        sender.sendMessage(Component.text("Successfully reloaded the config!", NamedTextColor.GREEN));
+        sender.getSender().sendMessage(Component.text("Successfully reloaded the config!", NamedTextColor.GREEN));
     }
 
     @EventHandler
